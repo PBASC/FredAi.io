@@ -18,11 +18,11 @@ load_dotenv()
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-app.secret_key = os.getenv("b0d84d62d367db377062d190253017b0")
+app.secret_key = os.getenv("SECRET_KEY")
 
 # SMTP Email Configurations (For Gmail)
-EMAIL_ADDRESS = os.getenv("jeffjackson@pbascorp.com")  # your email address
-EMAIL_PASSWORD = os.getenv("FredAI.2024!")  # your email password or app password
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # The email address to send suggestions to
 TO_EMAIL = "professionalbusinessadvisory@gmail.com"
@@ -30,7 +30,8 @@ TO_EMAIL = "professionalbusinessadvisory@gmail.com"
 # Gemini API configuration
 # IMPORTANT: The API key should be provided via environment variables in production.
 # For local development, you might set it directly or via a .env file.
-GEMINI_API_KEY = os.getenv("AIzaSyDyRRnnM4ERIhjLe5JS9TZ6ypLLNy7LfR8") 
+# Gemini API configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 
