@@ -147,3 +147,7 @@ def generate_image():
     except Exception as e:
         print(f"An unexpected error occurred in generate_image: {e}")
         return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
+
+    except Exception as e:
+        print(f"An unexpected error occurred in generate_image: {e}")
+        return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
