@@ -99,10 +99,6 @@ def chat_gemini():
 # --- NEW: Route for Image Generation ---
 @app.route('/generate_image', methods=['POST'])
 def generate_image():
-    """
-    Handles image generation requests.
-    NOTE: This is a placeholder and needs to be connected to a real image generation API.
-    """
     user_prompt = request.json.get('message', '').replace('/imagine', '').strip()
     if not user_prompt:
         return jsonify({'error': 'No prompt provided for image generation'}), 400
@@ -110,32 +106,44 @@ def generate_image():
     print(f"Received image prompt: {user_prompt}")
 
     try:
-        # ---
-        # TODO: Replace this section with a call to a real image generation API.
-        # The code below is a placeholder to show how the feature works.
-        #
-        # Example using a hypothetical API:
-        # headers = {'Authorization': f'Bearer {IMAGE_API_KEY}'}
-        # payload = {'prompt': user_prompt, 'n': 1, 'size': '512x512'}
-        # response = requests.post(IMAGE_API_URL, headers=headers, json=payload)
-        # response.raise_for_status()
-        # image_url = response.json()['data'][0]['url']
-        # ---
+        # --- THIS IS THE SECTION TO REPLACE ---
+        # The line below is the placeholder you must remove:
+        # image_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(user_prompt)}"
 
-        # For demonstration, we will return a placeholder image URL.
-        image_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(user_prompt)}"
-        print(f"Generated image URL: {image_url}")
+        # Replace it with a real API call like this one for Stability AI:
+        api_key = os.getenv("IMAGE_API_KEY")
+        if not api_key:
+            raise ValueError("IMAGE_API_KEY not found in environment variables.")
 
-        # UPDATED: Return a structured response with type 'image'
+        response = requests.post(
+            "https://api.stability.ai/v1/generation/stable-diffusion-v1-6/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            },
+            json={
+                "text_prompts": [{"text": user_prompt}],
+                "cfg_scale": 7,
+                "height": 512,
+                "width": 512,
+                "samples": 1,
+                "steps": 30,
+            },
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        # The response from Stability AI is the image data itself, not a URL.
+        # We need to save it to a file and serve it, or encode it.
+        # For simplicity, let's encode it directly into the HTML response.
+        import base64
+        image_b64 = data["artifacts"][0]["base64"]
+        image_url = f"data:image/png;base64,{image_b64}"
+        # --- END OF REPLACEMENT ---
+
         return jsonify({'response': image_url, 'type': 'image'})
 
-    except requests.exceptions.RequestException as e:
-        print(f"Request to Image API failed: {e}")
-        return jsonify({'error': 'Failed to connect to image generation service', 'details': str(e)}), 500
     except Exception as e:
         print(f"An unexpected error occurred in generate_image: {e}")
         return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
