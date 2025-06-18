@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // "Browse Prompts" button - FIX
+    // "Browse Prompts" button - CORRECTED
     document.getElementById('show-faqs-btn').addEventListener('click', function() {
         const promptList = document.getElementById('prompt-list');
         if (promptList.style.display === 'none' || promptList.style.display === '') {
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Predefined prompt buttons - FIX
+    // Predefined prompt buttons - CORRECTED
     document.querySelectorAll('.prompt-btn').forEach(button => {
         button.addEventListener('click', function() {
             const chatInput = document.getElementById('chat-input');
@@ -164,6 +164,3 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- INITIALIZE CHATBOT ---
     greetUser();
 });
-            msgDiv.innerHTML = `<div class="bubble">${parseMarkdown(content)}</div>`;
-        }
-        chatArea.appendChild(msgD
