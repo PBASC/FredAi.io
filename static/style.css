@@ -1,0 +1,439 @@
+/* ─────────────────────────────────────────────────────────
+   1. Variables & Palette
+───────────────────────────────────────────────────────── */
+:root {
+    /* Neutrals */
+    --chat-bg:       #FFF8ED;   /* warmer off-white */
+    --white:         #FFFFFF;
+
+    /* PBASC Brand Palette */
+    --dark-orange:   #FF9000;
+    --cool-black:    #012A68;
+    --teal:          #00B6BB;
+    --navy:          #014B7B;
+    --light-orange:  #FFAF1A;
+    --burnt-orange:  #FB7A01;
+
+    /* Adjusted neutrals for panels & text */
+    --panel-bg:      var(--white);
+    --text-main:     var(--cool-black);
+    --text-alt:      var(--dark-orange);
+}
+
+/* ─────────────────────────────────────────────────────────
+   2. Base Layout
+───────────────────────────────────────────────────────── */
+body {
+    background:      var(--chat-bg);
+    color:           var(--text-main);
+    font-family:     'Montserrat', sans-serif;
+    margin:          0;
+    min-height:      100vh;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+}
+
+.chatbot-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px; /* Chatbox width */
+    min-width: 350px;
+    min-height: 760px;
+    background: var(--panel-bg);
+    margin: 32px auto;
+    border-radius: 28px;
+    box-shadow: 0 8px 40px rgba(1, 42, 104, 0.13);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* Change to column layout */
+    border: 2px solid var(--navy);
+    transition: all 0.3s ease-in-out;
+}
+
+
+
+
+/* Hide/show animation */
+.chatbot-hidden {
+    opacity:         0;
+    visibility:      hidden;
+    pointer-events:  none;
+    transform:       translateY(100%);
+}
+
+/* ─────────────────────────────────────────────────────────
+   3. Watermark & Avatar
+───────────────────────────────────────────────────────── */
+.watermark-bg {
+    position:        absolute;
+    top:             50%;
+    left:            50%;
+    transform:       translate(-50%, -50%);
+    width:           125%;
+    max-width:       600px;
+    max-height:      425px;
+    opacity:         0.1;
+    z-index:         0;
+    pointer-events:  none;
+    user-select:     none;
+}
+
+.bot-avatar {
+    width:           33px;
+    height:          25px;
+    border-radius:   50%;
+    object-fit:      cover;
+    margin-right:    9px;
+    border:          2px solid var(--navy);
+    background:      var(--white);
+    box-shadow:      0 2px 8px rgba(193,170,115,0.10);
+    padding-bottom:  5px;
+}
+
+.message.bot {
+    display:         flex;
+    align-items:     flex-start;
+    gap:             7px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   4. Header & Branding
+───────────────────────────────────────────────────────── */
+.chatbot-header {
+    display:         flex;
+    align-items:     center;
+    padding:         20px 28px 16px 28px;
+    background:      var(--panel-bg);
+    border-bottom: 1.5px solid rgba(0,0,0,0.1);
+    gap:             12px;
+    position:        relative;
+}
+
+.close-chatbot-btn {
+    position:        absolute;
+    top:             15px;
+    right:           15px;
+    background:      transparent;
+    border:          none;
+    font-size:       1.5rem;
+    color:           var(--navy);
+    cursor:          pointer;
+    line-height:     1;
+    padding:         5px;
+    transition:      color 0.2s ease;
+}
+.close-chatbot-btn:hover {
+    color:           var(--dark-orange);
+}
+
+.logo-img {
+    width:           37px;
+    height:          40px;
+    object-fit:      contain;
+    border-radius:   10px;
+    border:          2px solid var(--navy);
+    background:      var(--white);
+}
+
+.brand-title {
+    font-family:     'Tavijar SemiBold', serif;
+    font-size:       1.25rem;
+    color:           var(--cool-black);
+    letter-spacing:  1px;
+    font-weight:     700;
+}
+
+/* ─────────────────────────────────────────────────────────
+   5. Tabs & Panels
+───────────────────────────────────────────────────────── */
+.tab-nav {
+    display:         flex;
+    border-bottom: 1px solid var(--chat-bg);
+    background:      #fff8ed;
+}
+.tab-btn {
+    flex:            1;
+    padding:         15px 0;
+    background:      transparent;
+    border:          none;
+    font:            600 1.08rem 'Montserrat', sans-serif;
+    color:           var(--cool-black);
+    letter-spacing:  0.5px;
+    cursor:          pointer;
+    outline:         none;
+    transition:      background 0.2s, color 0.2s;
+}
+.tab-btn.active {
+    background:      var(--light-orange);
+    color:           var(--cool-black);
+    border-bottom:   2.5px solid var(--navy);
+    border-radius:   0 12px 0 0;
+}
+.tab-content {
+    display:         none;
+    flex-direction:  column;
+    background:      var(--chat-bg);
+    padding:         0;
+}
+
+#chat-tab.tab-content {
+    display:         flex;
+    height:          440px;
+}
+#suggestion-tab.tab-content {
+    display:         flex;
+    height:          260px;
+    background:      #fff8ed;
+    justify-content: center;
+    align-items:     center;
+}
+
+/* ─────────────────────────────────────────────────────────
+   6. Chat Area & Bubbles
+───────────────────────────────────────────────────────── */
+.chat-scrollable-content {
+    flex-grow: 1; /* Allow the chat area to take up remaining space */
+    overflow-y: auto;
+    padding: 24px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-area {
+    display:         flex;
+    flex-direction:  column;
+    gap:             16px;
+    min-height:      fit-content;
+}
+
+.message {
+    display:         flex;
+    margin-bottom:   6px;
+    align-items:     flex-end;
+}
+.message.bot   { justify-content: flex-start; }
+.message.user  { justify-content: flex-end; }
+
+.bubble {
+    max-width:      74%;
+    padding:        12px 18px;
+    border-radius:  18px 18px 18px 5px;
+    font-size:      1rem;
+    box-shadow:     0 1px 6px rgba(12,72,62,0.10);
+    word-break:     break-word;
+    font-family:    'Montserrat', sans-serif;
+    line-height:    1.5;
+}
+
+.bot .bubble {
+    background:     var(--light-orange);
+    color:          var(--cool-black);
+    border-radius:  18px 18px 7px 18px;
+    border:         1px solid var(--navy);
+}
+
+.user .bubble {
+    background:     var(--cool-black);
+    color:          var(--white);
+    border-radius:  18px 7px 18px 18px;
+    border:         1px solid var(--light-orange);
+    text-align:     right;
+}
+
+/* ─────────────────────────────────────────────────────────
+   7. Prompt Buttons
+───────────────────────────────────────────────────────── */
+.prompt-list {
+    display: none;
+}
+
+.prompt-list {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    max-height: 150px; /* Set the max height you want for the prompt list */
+    overflow-y: auto;  /* Make it scrollable if there are too many items */
+}
+
+
+.prompt-btn {
+    background:      var(--navy);
+    color:           var(--white);
+    border:          2px solid var(--burnt-orange);
+    border-radius:   18px;
+    font:            600 1rem 'Montserrat', sans-serif;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    text-align:      center;
+    min-width:       135px;
+    min-height:      60px;
+    max-width:       600px;
+    width:           100%;
+    padding:         5px;
+    cursor:          pointer;
+    transition:      background 0.18s, color 0.18s, border 0.18s;
+    box-shadow:      0 2px 8px rgba(12,72,62,0.05);
+    margin-top:      0.5rem;
+}
+.prompt-btn:hover {
+    background:      var(--teal);
+    color:           var(--dark-orange);
+    border:          2px solid var(--burnt-orange);
+}
+
+/* ─────────────────────────────────────────────────────────
+   8. Suggestions Form
+───────────────────────────────────────────────────────── */
+.suggestion-form {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    width:           92%;
+    height:          100%;
+    margin:          0 auto;
+    padding:         24px 0 0;
+}
+
+.suggestion-input {
+    width:           100%;
+    min-height:      70px;
+    border:          1.2px solid var(--navy);
+    border-radius:   12px;
+    font:            1rem 'Montserrat', sans-serif;
+    padding:         14px 10px;
+    margin-bottom:   16px;
+    background:      #fff8ed;
+    color:           var(--cool-black);
+    resize:          vertical;
+}
+
+.suggestion-btn {
+    background:      var(--teal);
+    color:           var(--white);
+    border:          none;
+    border-radius:   10px;
+    font:            600 1rem 'Montserrat', sans-serif;
+    padding:         12px 34px;
+    cursor:          pointer;
+    margin-bottom:   10px;
+    transition:      background 0.18s, color 0.18s;
+    box-shadow:      0 2px 8px rgba(12,72,62,0.07);
+}
+.suggestion-btn:hover {
+    background:      var(--dark-orange);
+    color:           var(--cool-black);
+}
+
+.suggestion-message {
+    margin-top:      8px;
+    font:            1.01rem 'Montserrat', sans-serif;
+    color:           var(--navy);
+    text-align:      center;
+}
+
+/* ─────────────────────────────────────────────────────────
+   9. Bottom Controls & Chat Input
+───────────────────────────────────────────────────────── */
+.chat-bottom-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 12px;
+    background: var(--panel-bg);
+    margin-top: auto; /* Push input section to the bottom */
+    width: 100%;
+}
+
+.show-faqs-btn {
+    background:      var(--navy);
+    color:           var(--white);
+    border:          1.5px solid var(--rose-gold);
+    border-radius:   15px;
+    font:            600 0.95rem 'Montserrat', sans-serif;
+    padding:         8px 18px;
+    cursor:          pointer;
+    box-shadow:      0 2px 8px rgba(12,72,62,0.05);
+    margin-bottom:   10px;
+    transition:      background 0.18s, color 0.18s, border 0.18s;
+}
+.show-faqs-btn:hover {
+    background:      var(--light-orange);
+    color:           var(--cool-black);
+    border:          1.5px solid var(--burnt-orange);
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 10px 12px;
+    border-top: 1px solid #eee;
+    background: var(--white);
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: -5rem;;
+}
+
+.chat-input {
+    flex: 1;
+    border: 1px solid var(--navy);
+    border-radius: 20px;
+    padding: 10px 15px;
+    margin-left: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    resize: none;
+    min-height: 20px;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.send-chat-btn {
+    background:      var(--teal);          /* Primary brand accent */
+    color:           var(--white);
+    border:          none;
+    border-radius:   20px;
+    padding:         10px 20px;
+    margin-right: 5px;
+    font:            600 1rem 'Montserrat', sans-serif;
+    cursor:          pointer;
+    transition:      background 0.18s, color 0.18s;
+}
+.send-chat-btn:hover {
+    background:      var(--burnt-orange);  /* Warm, attention-grabbing hover */
+    color:           var(--white);
+}
+
+/* ─────────────────────────────────────────────────────────
+   10. Media Queries & Scrollbars
+───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .chatbot-wrapper { max-width: 99vw; min-width: 98vw; margin: 1vw; border-radius: 18px; height: auto; }
+    .chatbot-header { padding: 14px 10px 12px 12px; }
+    .close-chatbot-btn { top: 10px; right: 10px; font-size: 1.2rem; padding: 3px; }
+    .tab-content, #chat-tab.tab-content { min-height: 50vh; height: auto; max-height: 80vh; }
+    .chat-scrollable-content { padding: 8px 4px; }
+    .categories-container, .questions-container { grid-template-columns: 1fr; gap: 10px; max-width: 98vw; }
+    .category-btn, .question-btn { min-width: 110px; }
+    .chat-bottom-controls { padding-top: 8px; }
+    .show-faqs-btn { padding: 6px 14px; font-size: 0.9rem; margin-bottom: 8px; }
+    .chat-input-container { padding: 8px 10px; }
+    .chat-input { padding: 8px 12px; }
+    .send-chat-btn { padding: 8px 15px; }
+}
+
+::-webkit-scrollbar {
+    width:           7px;
+    background:      #f3e7d6;
+    border-radius:   10px;
+}
+::-webkit-scrollbar-thumb {
+    background:      var(--light-orange);
+    border-radius:   10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background:      var(--navy);
+}
+

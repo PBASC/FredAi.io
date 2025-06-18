@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PBASC Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon.jpeg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chatbot-wrapper">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="watermark-bg" alt="PBASC Watermark" />
+        <div class="chatbot-header">
+            <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="PBASC Logo" class="logo-img">
+            <span class="brand-title">Professional Business Advisory Service Corporation</span>
+            <button class="close-chatbot-btn" id="close-chatbot-btn">X</button>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="chat">Chat</button>
+            <button class="tab-btn" data-tab="suggestion">Suggest a Service</button>
+        </div>
+
+        <div class="tab-content" id="chat-tab" style="display: flex;">
+            <div class="chat-scrollable-content" id="chat-scrollable-content">
+                <div class="chat-area" id="chat-area"></div>
+            </div>
+            <div class="chat-bottom-controls">
+                <!-- Initially only this button will be visible -->
+                <button id="show-faqs-btn" class="show-faqs-btn">Browse Prompts</button>
+
+                <!-- Prompt list is hidden by default -->
+                <div class="prompt-list" id="prompt-list" style="display: none;">
+                    <button class="prompt-btn" id="business-plan-btn">
+                        Please write a detailed business plan for my [industry name] business
+                    </button>
+                    <button class="prompt-btn" id="employee-handbook-btn">
+                        Please write a detailed employee handbook for my small business
+                    </button>
+                    <button class="prompt-btn" id="12-month-budget-btn">
+                        Please write a detailed 12-month budget for my [industry type] small business
+                    </button>
+                    <button class="prompt-btn" id="business-name-logo-btn">
+                        Please design a small business name and logo for my [industry] business
+                    </button>
+                </div>
+
+                <div class="chat-input-container">
+                    <textarea id="chat-input" class="chat-input" placeholder="Type your message..."></textarea>
+                    <button id="send-chat-btn" class="send-chat-btn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="suggestion-tab" style="display: none;">
+            <div class="suggestion-form">
+                <textarea id="suggestion-input" class="suggestion-input" rows="4" placeholder="Request a service that we should offer..."></textarea>
+                <button id="suggestion-btn" class="suggestion-btn">Submit</button>
+                <div id="suggestion-message" class="suggestion-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
