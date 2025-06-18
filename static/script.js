@@ -4,7 +4,7 @@ const RENDER_BASE_URL = 'http://127.0.0.1:5000';  // Local server URL
 
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Display greeting message when the page loads
-    greetUser();  // Display greeting message when page is loaded
+    greetUser();
 
     // 2. Tabs for switching between Chat and Suggestion
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -17,232 +17,150 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 3. Browse FAQs button to show/hide the predefined prompt buttons
-    const showFaqsBtn = document.getElementById('show-faqs-btn');
-    const promptList = document.getElementById('prompt-list');
-
-    showFaqsBtn.addEventListener('click', function() {
-        // Toggle the visibility of prompt buttons
+    // 3. Browse FAQs button
+    document.getElementById('show-faqs-btn').addEventListener('click', function() {
+        const promptList = document.getElementById('prompt-list');
         promptList.style.display = promptList.style.display === 'none' ? 'block' : 'none';
     });
 
-    // 4. Adding Event Listeners for the predefined prompt buttons
-    const promptButtons = document.querySelectorAll('.prompt-btn');
-    promptButtons.forEach(button => {
+    // 4. Predefined prompt buttons
+    document.querySelectorAll('.prompt-btn').forEach(button => {
         button.addEventListener('click', function() {
-            // Get the button's text and add it to the chat input
             const chatInput = document.getElementById('chat-input');
-            chatInput.value = this.textContent.trim(); // Set the prompt text to chat input
-
-            // Hide the prompt buttons after selection
-            promptList.style.display = 'none';
+            chatInput.value = this.textContent.trim();
+            document.getElementById('prompt-list').style.display = 'none';
         });
     });
 
-    // 5. Event listener for Send button
-    const sendChatBtn = document.getElementById('send-chat-btn');
-    sendChatBtn.addEventListener('click', sendOpenEndedMessage);
+    // 5. Send button event listener
+    document.getElementById('send-chat-btn').addEventListener('click', sendOpenEndedMessage);
 
-    // 6. Event listener for Enter key press
+    // 6. Enter key press event listener
     const chatInput = document.getElementById('chat-input');
     chatInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent new line in textarea
             sendOpenEndedMessage();
         }
     });
 
-    // 7. Function to send open-ended messages to Gemini API
+    // 7. Function to send messages to the backend
     async function sendOpenEndedMessage() {
         const userMessage = chatInput.value.trim();
+        if (!userMessage) return;
 
-        if (!userMessage) {
-            return; // Don't send empty messages
-        }
+        addMessage(userMessage, 'user');
+        chatInput.value = '';
 
-        document.getElementById('chat-area').style.display = 'flex'; // Ensure chat area is visible
-
-        addMessage(userMessage, 'user'); // Display user's message
-        chatInput.value = ''; // Clear input field
-
-        // Optionally add a loading indicator
-        const loadingMessageId = 'loading-gemini-response';
-        addMessage('Thinking...', 'bot', loadingMessageId); // Add a temporary loading message
+        const loadingMessageId = 'loading-response';
+        addMessage('Thinking...', 'bot', loadingMessageId);
 
         try {
-            const response = await fetch(`https://fredai-io.onrender.com/chat_gemini`, {
+            // --- UPDATED: Logic to decide which endpoint to call ---
+            let endpoint = `${RENDER_BASE_URL}/chat_gemini`;
+            if (userMessage.startsWith('/imagine')) {
+                endpoint = `${RENDER_BASE_URL}/generate_image`;
+            }
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({message: userMessage})
             });
 
             const data = await response.json();
-
-            // Remove loading message
-            const loadingMsgDiv = document.getElementById(loadingMessageId);
-            if (loadingMsgDiv) {
-                loadingMsgDiv.remove();
-            }
+            document.getElementById(loadingMessageId)?.remove();
 
             if (response.ok) {
-                addMessage(data.response, 'bot'); // Display Gemini's response
+                // UPDATED: Handle response based on its type (text or image)
+                if (data.type === 'image') {
+                    addMessage(data.response, 'bot', null, 'image');
+                } else {
+                    addMessage(data.response, 'bot', null, 'text');
+                }
             } else {
-                console.error("Error from Gemini API endpoint:", data.error || response.statusText);
                 addMessage("Sorry, I couldn't process that. Please try again.", 'bot');
             }
         } catch (error) {
-            console.error("Network or unexpected error calling Gemini API:", error);
-            // Remove loading message
-            const loadingMsgDiv = document.getElementById(loadingMessageId);
-            if (loadingMsgDiv) {
-                loadingMsgDiv.remove();
-            }
-            addMessage("It seems I'm having trouble connecting. Please check your internet or try again later.", 'bot');
+            console.error("Error calling backend:", error);
+            document.getElementById(loadingMessageId)?.remove();
+            addMessage("I'm having trouble connecting. Please check your internet or try again later.", 'bot');
         }
     }
 
-    // Handle suggestion form submission
-    const suggestionBtn = document.getElementById('suggestion-btn');
-    suggestionBtn.addEventListener('click', sendSuggestion);
-
-    // Handle Enter key press for suggestion form
-    const suggestionInput = document.getElementById('suggestion-input');
-    suggestionInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendSuggestion();
-        }
+    // Handle suggestion form
+    document.getElementById('suggestion-btn').addEventListener('click', sendSuggestion);
+    document.getElementById('suggestion-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendSuggestion();
     });
 
-    // Function to send the suggestion to the backend (which will send it to email)
     async function sendSuggestion() {
-        const suggestion = suggestionInput.value.trim();
-
-        if (!suggestion) {
-            return; // Don't send empty suggestions
-        }
-
-        // Optionally add a loading message
-        const loadingMessageId = 'loading-suggestion-response';
-        addMessage('Sending your suggestion...', 'bot', loadingMessageId);
+        const suggestion = document.getElementById('suggestion-input').value.trim();
+        if (!suggestion) return;
 
         try {
             const response = await fetch(`${RENDER_BASE_URL}/submit_suggestion`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ suggestion: suggestion }) // Send the suggestion as JSON
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ suggestion: suggestion })
             });
-
             const data = await response.json();
-
-            // Remove loading message
-            const loadingMsgDiv = document.getElementById(loadingMessageId);
-            if (loadingMsgDiv) {
-                loadingMsgDiv.remove();
-            }
-
-            const suggestionMessageDiv = document.getElementById('suggestion-message'); // Get the div for displaying the message
-
+            const messageDiv = document.getElementById('suggestion-message');
             if (response.ok) {
-                // Display success message
-                suggestionMessageDiv.textContent = 'Thank you! Your suggestion has been sent to the Customer Support.';
-                suggestionMessageDiv.style.color = 'green'; // Change the color for success
-                suggestionInput.value = ''; // Clear the suggestion input field
+                messageDiv.textContent = 'Thank you! Your suggestion has been sent.';
+                messageDiv.style.color = 'green';
+                document.getElementById('suggestion-input').value = '';
             } else {
-                // Display error message
-                suggestionMessageDiv.textContent = "Sorry, I couldn't send your suggestion. Please try again later.";
-                suggestionMessageDiv.style.color = 'red'; // Change the color for error
+                messageDiv.textContent = "Sorry, I couldn't send your suggestion. Please try again.";
+                messageDiv.style.color = 'red';
             }
         } catch (error) {
             console.error("Error sending suggestion:", error);
-            // Remove loading message
-            const loadingMsgDiv = document.getElementById(loadingMessageId);
-            if (loadingMsgDiv) {
-                loadingMsgDiv.remove();
-            }
-
-            const suggestionMessageDiv = document.getElementById('suggestion-message');
-            suggestionMessageDiv.textContent = "It seems I'm having trouble connecting. Please try again later.";
-            suggestionMessageDiv.style.color = 'red'; // Change the color for error
+            document.getElementById('suggestion-message').textContent = "Connection error. Please try again later.";
         }
     }
 
-
-
-    // 8. Function to add a message bubble to the chat
-    function addMessage(text, who = 'bot', id = null) {
+    // 8. Function to add a message to the chat area
+    // --- UPDATED: Now handles different message types (text/image) ---
+    function addMessage(content, who = 'bot', id = null, type = 'text') {
         const chatArea = document.getElementById('chat-area');
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${who}`;
-        if (id) {
-            msgDiv.id = id; // Set ID for loading message
-        }
+        if (id) msgDiv.id = id;
 
-        // Parsing the text for markdown-like syntax and converting it to HTML
-        const parsedText = parseMarkdown(text);
+        let messageContent;
+        if (type === 'image' && who === 'bot') {
+            // If the message type is image, create an image tag
+            messageContent = `<img src="${content}" alt="Generated Image" style="max-width: 100%; border-radius: 12px;">`;
+        } else {
+            // Otherwise, parse for markdown text
+            messageContent = parseMarkdown(content);
+        }
 
         if (who === 'bot') {
             msgDiv.innerHTML = `
                 <img src="static/icon.png" alt="Bot Avatar" class="bot-avatar">
-                <div class="bubble">${parsedText}</div>
+                <div class="bubble">${messageContent}</div>
             `;
         } else {
-            msgDiv.innerHTML = `<div class="bubble">${parsedText}</div>`;
+            msgDiv.innerHTML = `<div class="bubble">${parseMarkdown(content)}</div>`;
         }
         chatArea.appendChild(msgDiv);
-
-        // Scroll to the bottom of the scrollable content
-        const chatScrollableContent = document.getElementById('chat-scrollable-content');
-        chatScrollableContent.scrollTop = chatScrollableContent.scrollHeight;
+        document.getElementById('chat-scrollable-content').scrollTop = document.getElementById('chat-scrollable-content').scrollHeight;
     }
 
-
-    // Function to parse markdown-like syntax and convert it to HTML
+    // Function to parse markdown-like syntax
     function parseMarkdown(text) {
-        // Handle triple backticks (```) for code block
-        text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');  // Multi-line code block
-
-        // Handle bold and italic (**bold + italic**)
-        text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>');  // **bold + italic**
-
-        // Then, handle bold (**text**)
-        text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Just **bold**
-
-        // Handle italic (_text_)
-        text = text.replace(/_(.*?)_/g, '<i>$1</i>');  // Italic _text_
-
-        // Handle tables (| Header1 | Header2 | to <table><tr><th>Header1</th><th>Header2</th></tr>)
-        text = text.replace(/(?:\|.*?\|(\n|$))+/g, function(match) {
-            let rows = match.trim().split('\n');
-            let tableHTML = '<table border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin: 20px 0;">';
-
-            rows.forEach((row, rowIndex) => {
-                let columns = row.split('|').map(col => col.trim()).filter(col => col);
-                if (columns.length > 0) {
-                    tableHTML += '<tr>';
-                    columns.forEach((col, colIndex) => {
-                        if (rowIndex === 0) {
-                            tableHTML += `<th>${col}</th>`;
-                        } else {
-                            tableHTML += `<td>${col}</td>`;
-                        }
-                    });
-                    tableHTML += '</tr>';
-                }
-            });
-
-            tableHTML += '</table>';
-            return tableHTML;
-        });
-
-        return text;
+        return text
+            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+            .replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>')
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/_(.*?)_/g, '<i>$1</i>');
     }
 
-
-    // 9. Function to send the greeting message when the chat starts
+    // 9. Initial greeting message
     function greetUser() {
-        const greetingMessage = "Hi, I am PBASC Assistant. How can I help you today? You can browse prompts to start.";
-        addMessage(greetingMessage, 'bot'); // Add the greeting message to the chat area
+        const greetingMessage = "Hi, I am PBASC Assistant. How can I help? To generate an image, start your prompt with `/imagine`.";
+        addMessage(greetingMessage, 'bot');
     }
-
 });
