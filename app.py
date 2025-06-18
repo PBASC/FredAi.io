@@ -22,7 +22,7 @@ app.secret_key = os.getenv("b0d84d62d367db377062d190253017b0")
 
 # SMTP Email Configurations (For Gmail)
 EMAIL_ADDRESS = os.getenv("jeffjackson@pbascorp.com")  # your email address
-EMAIL_PASSWORD = os.getenv("NewCar2024!?")  # your email password or app password
+EMAIL_PASSWORD = os.getenv("FredAI.2024!")  # your email password or app password
 
 # The email address to send suggestions to
 TO_EMAIL = "professionalbusinessadvisory@gmail.com"
