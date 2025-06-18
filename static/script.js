@@ -125,17 +125,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // "Browse Prompts" button - uses classList.toggle
+    // "Browse Prompts" button - FIX
     document.getElementById('show-faqs-btn').addEventListener('click', function() {
-        document.getElementById('prompt-list').classList.toggle('hidden');
+        const promptList = document.getElementById('prompt-list');
+        if (promptList.style.display === 'none' || promptList.style.display === '') {
+            promptList.style.display = 'flex';
+        } else {
+            promptList.style.display = 'none';
+        }
     });
 
-    // Predefined prompt buttons
+    // Predefined prompt buttons - FIX
     document.querySelectorAll('.prompt-btn').forEach(button => {
         button.addEventListener('click', function() {
             const chatInput = document.getElementById('chat-input');
             chatInput.value = this.textContent.trim();
-            document.getElementById('prompt-list').classList.add('hidden'); // Hide list after selection
+            document.getElementById('prompt-list').style.display = 'none'; // Hide list after selection
         });
     });
 
