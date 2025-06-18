@@ -1,7 +1,3 @@
-// Base URL for your Flask application
-//const RENDER_BASE_URL = 'https://fredai-io.onrender.com';
-const RENDER_BASE_URL = 'http://127.0.0.1:5000';  // Local server URL
-
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Display greeting message when the page loads
     greetUser();
@@ -17,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 3. Browse FAQs button
+    // 3. Browse Prompts button
     document.getElementById('show-faqs-btn').addEventListener('click', function() {
         const promptList = document.getElementById('prompt-list');
         promptList.style.display = promptList.style.display === 'none' ? 'block' : 'none';
@@ -56,11 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
         addMessage('Thinking...', 'bot', loadingMessageId);
 
         try {
-            // --- UPDATED: Logic to decide which endpoint to call ---
-            let endpoint = `${RENDER_BASE_URL}/chat_gemini`;
-            if (userMessage.startsWith('/imagine')) {
-                endpoint = `${RENDER_BASE_URL}/generate_image`;
-            }
+            // --- UPDATED: Use relative paths for API endpoints ---
+            let endpoint = userMessage.startsWith('/imagine') ? '/generate_image' : '/chat_gemini';
 
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -68,21 +61,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({message: userMessage})
             });
 
-            const data = await response.json();
+            // Remove the loading message
             document.getElementById(loadingMessageId)?.remove();
 
             if (response.ok) {
-                // UPDATED: Handle response based on its type (text or image)
+                const data = await response.json();
+                // Handle response based on its type (text or image)
                 if (data.type === 'image') {
                     addMessage(data.response, 'bot', null, 'image');
                 } else {
                     addMessage(data.response, 'bot', null, 'text');
                 }
             } else {
-                addMessage("Sorry, I couldn't process that. Please try again.", 'bot');
+                // Handle HTTP errors (like 500 from the server)
+                addMessage("Sorry, I couldn't process that. An error occurred on the server.", 'bot');
             }
         } catch (error) {
-            console.error("Error calling backend:", error);
+            // This block now correctly handles genuine network errors
+            console.error("Network or fetch error:", error);
             document.getElementById(loadingMessageId)?.remove();
             addMessage("I'm having trouble connecting. Please check your internet or try again later.", 'bot');
         }
@@ -99,12 +95,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!suggestion) return;
 
         try {
-            const response = await fetch(`${RENDER_BASE_URL}/submit_suggestion`, {
+            // --- UPDATED: Use relative path for suggestion endpoint ---
+            const response = await fetch('/submit_suggestion', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ suggestion: suggestion })
             });
-            const data = await response.json();
+
             const messageDiv = document.getElementById('suggestion-message');
             if (response.ok) {
                 messageDiv.textContent = 'Thank you! Your suggestion has been sent.';
@@ -117,11 +114,11 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             console.error("Error sending suggestion:", error);
             document.getElementById('suggestion-message').textContent = "Connection error. Please try again later.";
+            document.getElementById('suggestion-message').style.color = 'red';
         }
     }
 
     // 8. Function to add a message to the chat area
-    // --- UPDATED: Now handles different message types (text/image) ---
     function addMessage(content, who = 'bot', id = null, type = 'text') {
         const chatArea = document.getElementById('chat-area');
         const msgDiv = document.createElement('div');
@@ -130,16 +127,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let messageContent;
         if (type === 'image' && who === 'bot') {
-            // If the message type is image, create an image tag
-            messageContent = `<img src="${content}" alt="Generated Image" style="max-width: 100%; border-radius: 12px;">`;
+            messageContent = `<img src="${content}" alt="Generated Image" style="max-width: 100%; border-radius: 12px; display: block;">`;
         } else {
-            // Otherwise, parse for markdown text
             messageContent = parseMarkdown(content);
         }
 
         if (who === 'bot') {
             msgDiv.innerHTML = `
-                <img src="static/icon.png" alt="Bot Avatar" class="bot-avatar">
+                <img src="/static/icon.jpeg" alt="Bot Avatar" class="bot-avatar">
                 <div class="bubble">${messageContent}</div>
             `;
         } else {
@@ -151,9 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to parse markdown-like syntax
     function parseMarkdown(text) {
+        // Basic parser for bold and italic
         return text
-            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-            .replace(/\*\*\*(.*?)\*\*\*/g, '<b><i>$1</i></b>')
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
             .replace(/_(.*?)_/g, '<i>$1</i>');
     }
