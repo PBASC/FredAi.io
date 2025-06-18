@@ -36,13 +36,12 @@ body {
     align-items: center;
     justify-content: center;
 
-    /* --- ADDED for sharper text rendering --- */
-    -webkit-font-smoothing: antialiased; /* macOS/iOS Safari/Chrome */
-    -moz-osx-font-smoothing: grayscale; /* Firefox on macOS/iOS */
-    text-rendering: optimizeLegibility; /* Improves kerning and ligatures */
-    /* Ensure a base font size for consistency across elements */
-    font-size: 16px; /* Example, adjust as needed */
-    line-height: 1.5; /* Good default line height */
+    /* --- ADDED/ADJUSTED for sharper text rendering --- */
+    -webkit-font-smoothing: antialiased; /* macOS/iOS Safari/Chrome: Smoother fonts */
+    -moz-osx-font-smoothing: grayscale; /* Firefox on macOS/iOS: Smoother fonts */
+    text-rendering: optimizeLegibility; /* Improves kerning and ligatures for better readability */
+    font-size: 16px; /* Ensure a base font size for consistency across elements */
+    line-height: 1.5; /* Good default line height for readability */
 }
 
 /* For responsive scaling on mobile to prevent blurry initial rendering */
@@ -53,7 +52,6 @@ html {
 /* Ensure this meta tag is in your HTML <head> section:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 */
-
 
 .chatbot-wrapper {
     position: relative;
@@ -68,11 +66,12 @@ html {
     overflow: hidden;
     display: flex;
     flex-direction: column; /* Change to column layout */
-    border: 2px solid var(--navy); /* Borders look good already */
+    border: 2px solid var(--navy); /* Borders typically appear sharp with pixel values */
     transition: all 0.3s ease-in-out;
-    /* Added: Ensure crisp rendering of content within on some systems */
+    /* Added: Helps some browsers render content crisply by promoting hardware acceleration */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    transform: translateZ(0); /* Forces hardware acceleration on some elements */
 }
 
 /* Hide/show animation */
@@ -98,12 +97,11 @@ html {
     z-index: 0;
     pointer-events: none;
     user-select: none;
-    /* --- ADDED for better image scaling on the watermark --- */
-    /* If this is a raster image, consider using a higher resolution source. */
-    /* These can sometimes make very subtle images look better, but primarily for pixel art */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    image-rendering: pixelated; /* Be careful, this can make non-pixel art look bad */
+    /* --- ADDED for potentially sharper image scaling on the watermark --- */
+    /* If this is a raster image, consider using a higher resolution source or SVG. */
+    image-rendering: -webkit-optimize-contrast; /* Webkit browsers */
+    image-rendering: crisp-edges; /* Modern browsers (can make pixel art look sharp) */
+    /* image-rendering: pixelated; /* Use with extreme caution, only for deliberate pixelation */
 }
 
 .bot-avatar {
@@ -117,8 +115,7 @@ html {
     box-shadow: 0 2px 8px rgba(193, 170, 115, 0.10);
     padding-bottom: 5px;
     /* --- ADDED for avatar sharpness --- */
-    /* If the avatar image itself is blurry, provide a higher resolution source. */
-    /* For small circular images, SVG is ideal for logos/icons. */
+    /* If the avatar image itself is blurry, provide a higher resolution source. For logos/icons, SVG is ideal. */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
 }
@@ -140,9 +137,10 @@ html {
     border-bottom: 1.5px solid rgba(0, 0, 0, 0.1); /* Border looks sharp already */
     gap: 12px;
     position: relative;
-    /* Added: For potential subtle crispness */
+    /* Added: For potential subtle crispness via hardware acceleration */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .close-chatbot-btn {
@@ -189,8 +187,8 @@ html {
 ───────────────────────────────────────────────────────── */
 .tab-nav {
     display: flex;
-    border-bottom: 1px solid var(--chat-bg); /* Check this border for sharpness */
-    background: #fff8ed;
+    border-bottom: 1px solid var(--border-color-default); /* Used variable for consistency */
+    background: var(--chat-bg); /* Used variable */
 }
 .tab-btn {
     flex: 1;
@@ -224,7 +222,7 @@ html {
 #suggestion-tab.tab-content {
     display: flex;
     height: 260px;
-    background: #fff8ed;
+    background: var(--chat-bg); /* Used variable */
     justify-content: center;
     align-items: center;
 }
@@ -242,6 +240,7 @@ html {
     /* Added: For subtle crispness */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .chat-area {
@@ -264,10 +263,10 @@ html {
     padding: 12px 18px;
     border-radius: 18px 18px 18px 5px;
     font-size: 1rem;
-    box-shadow: 0 1px 6px rgba(12, 72, 62, 0.10);
-    /* ORIGINAL: word-break: break-word; - This is good, but let's enhance */
+    box-shadow: 0 1px 6px rgba(12, 72, 62, 0.10); /* Shadow looks soft, can be adjusted for sharpness */
+    /* --- Corrected text wrapping --- */
     word-break: break-word; /* Ensures long words break to the next line */
-    overflow-wrap: break-word; /* Alternative/modern equivalent to word-break */
+    overflow-wrap: break-word; /* Modern equivalent to word-break */
     white-space: normal; /* Ensures text wraps normally, not on a single line */
     font-family: 'Montserrat', sans-serif;
     line-height: 1.5;
@@ -275,4 +274,280 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transform: translateZ(0); /* Promotes hardware acceleration */
+}
+
+.bot .bubble {
+    background: var(--light-orange);
+    color: var(--cool-black);
+    border-radius: 18px 18px 7px 18px;
+    border: 1px solid var(--navy); /* Borders look sharp */
+}
+
+.user .bubble {
+    background: var(--cool-black);
+    color: var(--white);
+    border-radius: 18px 7px 18px 18px;
+    border: 1px solid var(--light-orange); /* Borders look sharp */
+    text-align: right;
+}
+
+/* ─────────────────────────────────────────────────────────
+   7. Prompt Buttons
+───────────────────────────────────────────────────────── */
+.prompt-list {
+    /* If you want this to show, change display: none to flex or block */
+    display: flex; /* Changed from 'none' to 'flex' to potentially show prompts if needed */
+    flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+    justify-content: center; /* Centers buttons */
+    align-items: flex-start; /* Aligns items to the start of the cross-axis */
+    gap: 10px; /* Space between buttons */
+    margin-top: 15px; /* Adjust spacing as needed */
+    margin-bottom: 15px;
+    max-height: 150px; /* Set the max height you want for the prompt list */
+    overflow-y: auto; /* Make it scrollable if there are too many items */
+    padding: 0 10px; /* Add some horizontal padding */
+}
+
+
+.prompt-btn {
+    background: var(--navy);
+    color: var(--white);
+    border: 2px solid var(--burnt-orange); /* Borders look sharp */
+    border-radius: 18px;
+    font: 600 1rem 'Montserrat', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 135px;
+    min-height: 60px;
+    max-width: 600px;
+    width: auto; /* Changed to auto to allow content-based width with flex-wrap */
+    padding: 5px 15px; /* Adjust padding for better look */
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    box-shadow: 0 2px 8px rgba(12, 72, 62, 0.05); /* Shadow looks soft */
+    margin-top: 0.5rem;
+    /* Added: Ensure text and shapes are rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+}
+.prompt-btn:hover {
+    background: var(--teal);
+    color: var(--dark-orange);
+    border: 2px solid var(--burnt-orange);
+}
+
+/* ─────────────────────────────────────────────────────────
+   8. Suggestions Form
+───────────────────────────────────────────────────────── */
+.suggestion-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 92%;
+    height: 100%; /* Height might be constrained by parent, adjust as needed */
+    margin: 0 auto;
+    padding: 24px 0 0;
+}
+
+.suggestion-input {
+    width: 100%;
+    min-height: 70px;
+    border: 1.2px solid var(--navy); /* Can be rounded to 1px or 2px for crispness if 1.2px causes issues */
+    border-radius: 12px;
+    font: 1rem 'Montserrat', sans-serif;
+    padding: 14px 10px;
+    margin-bottom: 16px;
+    background: var(--chat-bg); /* Used variable */
+    color: var(--cool-black);
+    resize: vertical;
+    outline: none; /* Ensure no fuzzy outline on focus */
+    /* Added: Ensure text is rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.suggestion-input:focus {
+    border-color: var(--dark-orange); /* Example: Add a crisp focus border */
+    box-shadow: 0 0 0 2px rgba(255, 144, 0, 0.2); /* Subtle, crisp focus shadow */
+}
+
+.suggestion-btn {
+    background: var(--teal);
+    color: var(--white);
+    border: none; /* Looks fine, no border */
+    border-radius: 10px;
+    font: 600 1rem 'Montserrat', sans-serif;
+    padding: 12px 34px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.18s, color 0.18s;
+    box-shadow: 0 2px 8px rgba(12, 72, 62, 0.07); /* Shadow looks soft */
+    /* Added: Ensure text is rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+}
+.suggestion-btn:hover {
+    background: var(--dark-orange);
+    color: var(--cool-black);
+}
+
+.suggestion-message {
+    margin-top: 8px;
+    font: 1.01rem 'Montserrat', sans-serif;
+    color: var(--navy);
+    text-align: center;
+    /* Font smoothing applied via body */
+}
+
+/* ─────────────────────────────────────────────────────────
+   9. Bottom Controls & Chat Input
+───────────────────────────────────────────────────────── */
+.chat-bottom-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 12px;
+    background: var(--panel-bg);
+    margin-top: auto; /* Push input section to the bottom */
+    width: 100%;
+    /* Added: For subtle crispness */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.show-faqs-btn {
+    background: var(--navy);
+    color: var(--white);
+    /* Corrected: Replaced undefined --rose-gold with --burnt-orange from defined palette */
+    border: 1.5px solid var(--burnt-orange);
+    border-radius: 15px;
+    font: 600 0.95rem 'Montserrat', sans-serif;
+    padding: 8px 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(12, 72, 62, 0.05); /* Shadow looks soft */
+    margin-bottom: 10px;
+    transition: background 0.18s, color 0.18s, border 0.18s;
+    /* Added: Ensure text and shapes are rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+}
+.show-faqs-btn:hover {
+    background: var(--light-orange);
+    color: var(--cool-black);
+    border: 1.5px solid var(--burnt-orange);
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 10px 12px;
+    border-top: 1px solid var(--border-color-default); /* Used variable */
+    background: var(--white);
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    /* --- Corrected negative margin that was cutting off the input box --- */
+    margin-bottom: 0; /* Changed from -5rem to 0 */
+    /* Added: For subtle crispness */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+.chat-input {
+    flex: 1;
+    border: 1px solid var(--navy); /* Borders look sharp */
+    border-radius: 20px;
+    padding: 10px 15px;
+    margin-left: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    outline: none; /* Removed default outline, replaced with custom focus */
+    resize: none;
+    min-height: 20px;
+    max-height: 80px;
+    overflow-y: auto;
+    /* Added: Ensure text is rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.chat-input:focus {
+    border-color: var(--dark-orange); /* Example: Add a crisp focus border */
+    box-shadow: 0 0 0 2px rgba(255, 144, 0, 0.2); /* Subtle, crisp focus shadow */
+}
+
+.send-chat-btn {
+    background: var(--teal); /* Primary brand accent */
+    color: var(--white);
+    border: none; /* Looks fine, no border */
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin-right: 5px;
+    font: 600 1rem 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    /* Added: Ensure text is rendered crisply */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateZ(0);
+}
+.send-chat-btn:hover {
+    background: var(--burnt-orange); /* Warm, attention-grabbing hover */
+    color: var(--white);
+}
+
+/* ─────────────────────────────────────────────────────────
+   10. Media Queries & Scrollbars
+───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .chatbot-wrapper {
+        max-width: 99vw;
+        min-width: 98vw;
+        margin: 1vw;
+        border-radius: 18px;
+        height: auto;
+    }
+    .chatbot-header { padding: 14px 10px 12px 12px; }
+    .close-chatbot-btn { top: 10px; right: 10px; font-size: 1.2rem; padding: 3px; }
+    .tab-content, #chat-tab.tab-content { min-height: 50vh; height: auto; max-height: 80vh; }
+    .chat-scrollable-content { padding: 8px 4px; }
+    /* Added responsive adjustments for prompt buttons */
+    .prompt-list {
+        gap: 5px; /* Smaller gap on mobile */
+        padding: 0 5px;
+    }
+    .prompt-btn {
+        min-width: unset; /* Remove min-width for better wrapping */
+        min-height: 45px; /* Adjust height for mobile */
+        font-size: 0.9rem; /* Adjust font size */
+        padding: 5px 10px;
+    }
+    .categories-container, .questions-container { grid-template-columns: 1fr; gap: 10px; max-width: 98vw; }
+    .category-btn, .question-btn { min-width: 110px; }
+    .chat-bottom-controls { padding-top: 8px; }
+    .show-faqs-btn { padding: 6px 14px; font-size: 0.9rem; margin-bottom: 8px; }
+    .chat-input-container {
+        padding: 8px 10px;
+        margin-bottom: 0; /* Ensure 0 margin bottom on mobile as well */
+    }
+    .chat-input { padding: 8px 12px; }
+    .send-chat-btn { padding: 8px 15px; }
+}
+
+/* Scrollbar styling (assuming webkit browsers) */
+::-webkit-scrollbar {
+    width: 7px;
+    background: #f3e7d6; /* Matches --chat-bg roughly, keeps it consistent */
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--light-orange);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--navy);
 }
