@@ -309,36 +309,37 @@ html {
 }
 
 
+/* --- NEW AESTHETIC VERSION --- */
 .prompt-btn {
-    background: var(--navy);
-    color: var(--white);
-    border: 2px solid var(--burnt-orange); /* Borders look sharp */
-    border-radius: 18px;
-    font: 600 1rem 'Montserrat', sans-serif;
+    background: var(--white); /* Lighter background */
+    color: var(--cool-black); /* Darker text for contrast */
+    border: 1.5px solid var(--navy); /* Thinner, more subtle border */
+    border-radius: 25px; /* More rounded for a 'pill' shape */
+    font: 600 0.875rem 'Montserrat', sans-serif; /* Smaller font size (14px) */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-width: 135px;
-    min-height: 60px;
+    min-height: 48px; /* Reduced height */
     max-width: 600px;
-    width: auto; /* Changed to auto to allow content-based width with flex-wrap */
-    padding: 5px 15px; /* Adjust padding for better look */
+    width: auto;
+    padding: 8px 22px; /* Adjusted padding for better text spacing */
     cursor: pointer;
-    transition: background 0.18s, color 0.18s, border 0.18s;
-    box-shadow: 0 2px 8px rgba(12, 72, 62, 0.05); /* Shadow looks soft */
+    transition: all 0.2s ease-in-out; /* Smoother transition */
+    box-shadow: 0 2px 8px rgba(12, 72, 62, 0.05);
     margin-top: 0.5rem;
-    /* Added: Ensure text and shapes are rendered crisply */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transform: translateZ(0);
 }
-.prompt-btn:hover {
-    background: var(--teal);
-    color: var(--dark-orange);
-    border: 2px solid var(--burnt-orange);
-}
 
+.prompt-btn:hover {
+    background: var(--navy); /* Invert colors on hover */
+    color: var(--white);
+    border-color: var(--light-orange); /* Highlight border on hover */
+    transform: translateY(-2px); /* Add a slight lift effect */
+    box-shadow: 0 4px 12px rgba(1, 42, 104, 0.15); /* Enhance shadow on hover */
+}
 /* ─────────────────────────────────────────────────────────
    8. Suggestions Form
 ───────────────────────────────────────────────────────── */
