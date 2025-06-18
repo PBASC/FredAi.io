@@ -10,7 +10,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Load environment variables
-load_dotenv()
+# This loads from a .env file locally. On Render, variables are set in the dashboard.
+load_dotenv() 
 
 # Initialize CORS for your app
 # IMPORTANT: Temporarily allowing all origins (*) for debugging purposes.
@@ -18,11 +19,14 @@ load_dotenv()
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
+# Corrected: Using the *name* of the environment variable to retrieve its value
 app.secret_key = os.getenv("SECRET_KEY")
 
 # SMTP Email Configurations (For Gmail)
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+# Corrected: Using the *name* of the environment variable to retrieve its value
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")  # your email address
+# Corrected: Using the *name* of the environment variable to retrieve its value
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # your email password or app password
 
 # The email address to send suggestions to
 TO_EMAIL = "professionalbusinessadvisory@gmail.com"
@@ -30,8 +34,8 @@ TO_EMAIL = "professionalbusinessadvisory@gmail.com"
 # Gemini API configuration
 # IMPORTANT: The API key should be provided via environment variables in production.
 # For local development, you might set it directly or via a .env file.
-# Gemini API configuration
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Corrected: Using the *name* of the environment variable to retrieve its value
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 
@@ -144,6 +148,9 @@ def chat_gemini():
         print(f"An unexpected error occurred: {e}")
         return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
 
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
