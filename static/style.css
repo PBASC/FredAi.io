@@ -264,11 +264,15 @@ html {
     padding: 12px 18px;
     border-radius: 18px 18px 18px 5px;
     font-size: 1rem;
-    box-shadow: 0 1px 6px rgba(12, 72, 62, 0.10); /* Shadow looks soft, can be adjusted for sharpness */
-    word-break: break-word;
+    box-shadow: 0 1px 6px rgba(12, 72, 62, 0.10);
+    /* ORIGINAL: word-break: break-word; - This is good, but let's enhance */
+    word-break: break-word; /* Ensures long words break to the next line */
+    overflow-wrap: break-word; /* Alternative/modern equivalent to word-break */
+    white-space: normal; /* Ensures text wraps normally, not on a single line */
     font-family: 'Montserrat', sans-serif;
     line-height: 1.5;
-    /* Added: Ensure text and shapes within bubbles are rendered crisply */
+    /* Added for visual sharpness (as per previous recommendations) */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transform: translateZ(0); /* Promotes hardware
+    transform: translateZ(0); /* Promotes hardware acceleration */
+}
