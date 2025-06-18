@@ -10,33 +10,28 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Load environment variables
-# This loads from a .env file locally. On Render, variables are set in the dashboard.
 load_dotenv()
 
 # Initialize CORS for your app
-# IMPORTANT: Temporarily allowing all origins (*) for debugging purposes.
-# In production, consider explicitly listing all valid Shopify domains (e.g., "https://yourcustomdomain.com", "https://impactventurescologne.myshopify.com").
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+app.secret_key = os.getenv("SECRET_KEY")
 
-# Corrected: Using the *name* of the environment variable to retrieve its value
-app.secret_key = os.getenv("SECRET_KEY") #
-
-# SMTP Email Configurations (For Gmail)
-# Corrected: Using the *name* of the environment variable to retrieve its value
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS") #
-# Corrected: Using the *name* of the environment variable to retrieve its value
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") #
-
-# The email address to send suggestions to
+# SMTP Email Configurations
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 TO_EMAIL = "professionalbusinessadvisory@gmail.com"
 
-# Gemini API configuration
-# IMPORTANT: The API key should be provided via environment variables in production.
-# For local development, you might set it directly or via a .env file.
-# Corrected: Using the *name* of the environment variable to retrieve its value
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") #
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+# Gemini API configuration - UPDATED to use Gemini 1.5 Pro
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# UPDATED MODEL: Using gemini-1.5-pro-latest. "2.5 pro" is not yet available.
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent"
+
+# --- NEW: Placeholder for an Image Generation API ---
+# You will need to replace these with a real text-to-image API service.
+# For example, from OpenAI (DALL-E), Stability AI, or another provider.
+IMAGE_API_KEY = os.getenv("IMAGE_API_KEY", "YOUR_IMAGE_API_KEY_HERE")
+IMAGE_API_URL = os.getenv("IMAGE_API_URL", "YOUR_IMAGE_GENERATION_API_ENDPOINT_HERE")
 
 
 @app.route('/')
@@ -46,21 +41,14 @@ def home():
 
 @app.route('/submit_suggestion', methods=['POST'])
 def submit_suggestion():
-    data = request.get_json()  # Get the JSON data sent from the frontend
-    suggestion = data.get('suggestion', '').strip()  # Get the suggestion text
-
-    # Log the suggestion for debugging
+    data = request.get_json()
+    suggestion = data.get('suggestion', '').strip()
     print(f"Received suggestion: {suggestion}")
-
-
-
     try:
-        # Send the suggestion via email
         send_email(suggestion)
         return jsonify({'success': True, 'message': 'Thank you! Your suggestion has been sent.'}), 200
     except Exception as e:
-        # Catch any error during email sending
-        print(f"Error in submitting suggestion: {str(e)}")  # Log error on the server
+        print(f"Error in submitting suggestion: {str(e)}")
         return jsonify({'success': False, 'message': f'Failed to send the suggestion: {str(e)}'}), 500
 
 
@@ -70,82 +58,82 @@ def send_email(suggestion):
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = TO_EMAIL
         msg['Subject'] = 'New Service Suggestion for PBASC'
-
-        # Crafting the email body with better formatting (HTML format)
         body = f"""
-        <html>
-        <body>
+        <html><body>
             <h2 style="color: #014B7B;">New Service Suggestion</h2>
             <p style="font-size: 16px;">A new suggestion has been submitted via the PBASC chatbot:</p>
             <p style="font-size: 16px; color: #4CAF50;">"{suggestion}"</p>
-            <p style="font-size: 16px;">Please review the suggestion and take action accordingly.</p>
-            <br>
-            <footer>
-                <p style="font-size: 14px; color: #777;">This is an automated email from PBASC. If you did not expect this email, please ignore it.</p>
-            </footer>
-        </body>
-        </html>
+        </body></html>
         """
-        msg.attach(MIMEText(body, 'html'))  # Attach the body as HTML
-
-        # Connect to Gmail's SMTP server and send the email
+        msg.attach(MIMEText(body, 'html'))
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()  # Secure the connection
+            server.starttls()
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            text = msg.as_string()
-            server.sendmail(EMAIL_ADDRESS, TO_EMAIL, text)
-
+            server.sendmail(EMAIL_ADDRESS, TO_EMAIL, msg.as_string())
         print("Email sent successfully!")
-
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
-        raise e  # Raise the exception to be caught in the route
+        raise e
 
 
 @app.route('/chat_gemini', methods=['POST'])
 def chat_gemini():
-    """
-    Handles open-ended questions from the chatbot frontend and sends them to the Gemini API.
-    """
     user_message = request.json.get('message', '').strip()
-
     if not user_message:
         return jsonify({'error': 'No message provided'}), 400
+    try:
+        payload = {"contents": [{"role": "user", "parts": [{"text": user_message}]}]}
+        headers = {'Content-Type': 'application/json'}
+        api_url_with_key = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
+        response = requests.post(api_url_with_key, headers=headers, json=payload)
+        response.raise_for_status()
+        gemini_response = response.json()
+        text_response = gemini_response['candidates'][0]['content']['parts'][0]['text']
+        # UPDATED: Return a structured response with a type
+        return jsonify({'response': text_response, 'type': 'text'})
+    except Exception as e:
+        print(f"An unexpected error occurred in chat_gemini: {e}")
+        return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
+
+
+# --- NEW: Route for Image Generation ---
+@app.route('/generate_image', methods=['POST'])
+def generate_image():
+    """
+    Handles image generation requests.
+    NOTE: This is a placeholder and needs to be connected to a real image generation API.
+    """
+    user_prompt = request.json.get('message', '').replace('/imagine', '').strip()
+    if not user_prompt:
+        return jsonify({'error': 'No prompt provided for image generation'}), 400
+
+    print(f"Received image prompt: {user_prompt}")
 
     try:
-        payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [{"text": user_message}]
-                }
-            ]
-        }
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        # Append API key to URL if it's provided, otherwise Canvas will inject it
-        api_url_with_key = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}" if GEMINI_API_KEY else GEMINI_API_URL
+        # ---
+        # TODO: Replace this section with a call to a real image generation API.
+        # The code below is a placeholder to show how the feature works.
+        #
+        # Example using a hypothetical API:
+        # headers = {'Authorization': f'Bearer {IMAGE_API_KEY}'}
+        # payload = {'prompt': user_prompt, 'n': 1, 'size': '512x512'}
+        # response = requests.post(IMAGE_API_URL, headers=headers, json=payload)
+        # response.raise_for_status()
+        # image_url = response.json()['data'][0]['url']
+        # ---
 
-        response = requests.post(api_url_with_key, headers=headers, json=payload)
-        response.raise_for_status() # Raise an exception for HTTP errors (4xx or 5xx)
-        gemini_response = response.json()
+        # For demonstration, we will return a placeholder image URL.
+        image_url = f"https://image.pollinations.ai/prompt/{requests.utils.quote(user_prompt)}"
+        print(f"Generated image URL: {image_url}")
 
-        # Extract the text from the Gemini API response
-        if gemini_response and gemini_response.get('candidates'):
-            first_candidate = gemini_response['candidates'][0]
-            if first_candidate.get('content') and first_candidate['content'].get('parts'):
-                first_part = first_candidate['content']['parts'][0]
-                if first_part.get('text'):
-                    return jsonify({'response': first_part['text']})
-
-        return jsonify({'error': 'Could not get a valid response from Gemini API', 'details': gemini_response}), 500
+        # UPDATED: Return a structured response with type 'image'
+        return jsonify({'response': image_url, 'type': 'image'})
 
     except requests.exceptions.RequestException as e:
-        print(f"Request to Gemini API failed: {e}")
-        return jsonify({'error': 'Failed to connect to AI service', 'details': str(e)}), 500
+        print(f"Request to Image API failed: {e}")
+        return jsonify({'error': 'Failed to connect to image generation service', 'details': str(e)}), 500
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred in generate_image: {e}")
         return jsonify({'error': 'An unexpected error occurred', 'details': str(e)}), 500
 
 
