@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // --- NEW: Flag to ensure the greeting is only sent once ---
+    let greetingHasBeenSent = false;
+
     // 1. Display greeting message when the page loads
     greetUser();
 
@@ -52,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
         addMessage('Thinking...', 'bot', loadingMessageId);
 
         try {
-            // --- UPDATED: Use relative paths for API endpoints ---
             let endpoint = userMessage.startsWith('/imagine') ? '/generate_image' : '/chat_gemini';
 
             const response = await fetch(endpoint, {
@@ -61,23 +63,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({message: userMessage})
             });
 
-            // Remove the loading message
             document.getElementById(loadingMessageId)?.remove();
 
             if (response.ok) {
                 const data = await response.json();
-                // Handle response based on its type (text or image)
                 if (data.type === 'image') {
                     addMessage(data.response, 'bot', null, 'image');
                 } else {
                     addMessage(data.response, 'bot', null, 'text');
                 }
             } else {
-                // Handle HTTP errors (like 500 from the server)
                 addMessage("Sorry, I couldn't process that. An error occurred on the server.", 'bot');
             }
         } catch (error) {
-            // This block now correctly handles genuine network errors
             console.error("Network or fetch error:", error);
             document.getElementById(loadingMessageId)?.remove();
             addMessage("I'm having trouble connecting. Please check your internet or try again later.", 'bot');
@@ -95,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!suggestion) return;
 
         try {
-            // --- UPDATED: Use relative path for suggestion endpoint ---
             const response = await fetch('/submit_suggestion', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -140,21 +137,4 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             msgDiv.innerHTML = `<div class="bubble">${parseMarkdown(content)}</div>`;
         }
-        chatArea.appendChild(msgDiv);
-        document.getElementById('chat-scrollable-content').scrollTop = document.getElementById('chat-scrollable-content').scrollHeight;
-    }
-
-    // Function to parse markdown-like syntax
-    function parseMarkdown(text) {
-        // Basic parser for bold and italic
-        return text
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-            .replace(/_(.*?)_/g, '<i>$1</i>');
-    }
-
-    // 9. Initial greeting message
-    function greetUser() {
-        const greetingMessage = "Hi, I am PBASC Assistant. How can I help? To generate an image, start your prompt with `/imagine`.";
-        addMessage(greetingMessage, 'bot');
-    }
-});
+        chatArea.appendChild(msgD
