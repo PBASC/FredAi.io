@@ -16,11 +16,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 3. Browse Prompts button
-    document.getElementById('show-faqs-btn').addEventListener('click', function() {
-        const promptList = document.getElementById('prompt-list');
-        promptList.style.display = promptList.style.display === 'none' ? 'block' : 'none';
-    });
+   // 3. Browse Prompts button
+document.getElementById('show-faqs-btn').addEventListener('click', function() {
+    const promptList = document.getElementById('prompt-list');
+    promptList.classList.toggle('hidden');
+});
 
     // 4. Predefined prompt buttons
     document.querySelectorAll('.prompt-btn').forEach(button => {
